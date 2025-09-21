@@ -26,9 +26,26 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
+      if (user) {
+        this.redirectBasedOnRole(user.role.name);
+      }
     });
     
     this.loadPolicies();
+  }
+
+  redirectBasedOnRole(role: string): void {
+    switch (role) {
+      case 'Customer':
+        this.router.navigate(['/customer-dashboard']);
+        break;
+      case 'Agent':
+        this.router.navigate(['/agent-dashboard']);
+        break;
+      case 'Admin':
+        this.router.navigate(['/admin-dashboard']);
+        break;
+    }
   }
 
   loadPolicies(): void {

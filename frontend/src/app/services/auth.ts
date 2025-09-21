@@ -13,8 +13,13 @@ export class AuthService {
 
   constructor(private http: HttpClient) {
     const token = localStorage.getItem('token');
-    if (token) {
-      this.loadUserProfile();
+    const user = localStorage.getItem('user');
+    if (token && user) {
+      try {
+        this.currentUserSubject.next(JSON.parse(user));
+      } catch {
+        this.logout();
+      }
     }
   }
 
@@ -23,23 +28,19 @@ export class AuthService {
       .pipe(
         tap(response => {
           localStorage.setItem('token', response.token);
+          localStorage.setItem('user', JSON.stringify(response.user));
           this.currentUserSubject.next(response.user);
         })
       );
   }
 
   register(userData: RegisterRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, userData)
-      .pipe(
-        tap(response => {
-          localStorage.setItem('token', response.token);
-          this.currentUserSubject.next(response.user);
-        })
-      );
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, userData);
   }
 
   logout(): void {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     this.currentUserSubject.next(null);
   }
 
@@ -60,10 +61,5 @@ export class AuthService {
     return user?.role.name === role;
   }
 
-  private loadUserProfile(): void {
-    this.http.get<User>(`${this.apiUrl}/profile`).subscribe({
-      next: user => this.currentUserSubject.next(user),
-      error: () => this.logout()
-    });
-  }
+
 }

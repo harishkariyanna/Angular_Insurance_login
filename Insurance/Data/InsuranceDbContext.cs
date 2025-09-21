@@ -13,8 +13,7 @@ namespace InsuranceManagement.Data
         public DbSet<Role> Roles { get; set; }
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
-        public DbSet<Customer> Customers { get; set; }
-        public DbSet<Address> Addresses { get; set; }
+
         public DbSet<Policy> Policies { get; set; }
         public DbSet<Coverage> Coverages { get; set; }
         public DbSet<Premium> Premiums { get; set; }
@@ -63,15 +62,15 @@ namespace InsuranceManagement.Data
         {
             modelBuilder.Entity<Policy>()
                 .HasOne(p => p.Customer)
-                .WithMany(c => c.Policies)
+                .WithMany(u => u.Policies)
                 .HasForeignKey(p => p.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Policy>()
                 .HasOne(p => p.Agent)
-                .WithMany(u => u.PoliciesAsAgent)
+                .WithMany()
                 .HasForeignKey(p => p.AgentId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Coverage>()
                 .HasOne(c => c.Policy)
@@ -85,11 +84,7 @@ namespace InsuranceManagement.Data
                 .HasForeignKey(pr => pr.PolicyId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Customer>()
-                .HasOne(c => c.Address)
-                .WithMany(a => a.Customers)
-                .HasForeignKey(c => c.AddressId)
-                .OnDelete(DeleteBehavior.Restrict);
+
         }
 
         private void ConfigureClaimRelationships(ModelBuilder modelBuilder)
@@ -102,7 +97,7 @@ namespace InsuranceManagement.Data
 
             modelBuilder.Entity<Claim>()
                 .HasOne(c => c.Customer)
-                .WithMany(cu => cu.Claims)
+                .WithMany(u => u.Claims)
                 .HasForeignKey(c => c.CustomerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -196,19 +191,10 @@ namespace InsuranceManagement.Data
                 new Address { Id = 3, Street = "789 Anna Salai", City = "Chennai", State = "Tamil Nadu", ZipCode = "600001", Country = "India" }
             );
 
-            // Seed customers
-            modelBuilder.Entity<Customer>().HasData(
-                new Customer { Id = 1, FirstName = "Arjun", LastName = "Singh", Email = "arjun.singh@gmail.com", PhoneNumber = "9876543213", AddressId = 1, DateOfBirth = new DateTime(1985, 5, 15), CreatedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-                new Customer { Id = 2, FirstName = "Kavya", LastName = "Reddy", Email = "kavya.reddy@gmail.com", PhoneNumber = "9876543214", AddressId = 2, DateOfBirth = new DateTime(1990, 8, 22), CreatedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-                new Customer { Id = 3, FirstName = "Vikram", LastName = "Gupta", Email = "vikram.gupta@gmail.com", PhoneNumber = "9876543215", AddressId = 3, DateOfBirth = new DateTime(1988, 12, 10), CreatedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
-            );
 
-            // Seed policies
-            modelBuilder.Entity<Policy>().HasData(
-                new Policy { Id = 1, PolicyNumber = "POL-2024-000001", CustomerId = 1, AgentId = 2, PolicyType = "Health", StartDate = new DateTime(2024, 1, 1), EndDate = new DateTime(2025, 1, 1), Status = "Active", PremiumAmount = 25000, CoverageAmount = 500000, Deductible = 5000, CreatedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-                new Policy { Id = 2, PolicyNumber = "POL-2024-000002", CustomerId = 2, AgentId = 2, PolicyType = "Life", StartDate = new DateTime(2024, 1, 1), EndDate = new DateTime(2044, 1, 1), Status = "Active", PremiumAmount = 50000, CoverageAmount = 2000000, Deductible = 0, CreatedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-                new Policy { Id = 3, PolicyNumber = "POL-2024-000003", CustomerId = 3, AgentId = 2, PolicyType = "Vehicle", StartDate = new DateTime(2024, 1, 1), EndDate = new DateTime(2025, 1, 1), Status = "Active", PremiumAmount = 15000, CoverageAmount = 300000, Deductible = 2000, CreatedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
-            );
+
+            // Remove policy seed data - will be created through application
+            // modelBuilder.Entity<Policy>().HasData();
         }
     }
 }

@@ -1,0 +1,76 @@
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0"><i class="bi bi-file-earmark-plus"></i> Apply for Insurance Policy</h4>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="submitApplication()" #policyForm="ngForm">
+            <div class="mb-3">
+              <label class="form-label">Policy Type *</label>
+              <select class="form-select" [(ngModel)]="policyApplication.policyType" 
+                      name="policyType" required (change)="onPolicyTypeChange()">
+                <option value="">Select Policy Type</option>
+                <option value="Auto">Auto Insurance</option>
+                <option value="Home">Home Insurance</option>
+                <option value="Life">Life Insurance</option>
+                <option value="Health">Health Insurance</option>
+              </select>
+            </div>
+
+            <div class="row" *ngIf="policyApplication.policyType">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Coverage Amount</label>
+                <div class="input-group">
+                  <span class="input-group-text">₹</span>
+                  <input type="number" class="form-control" 
+                         [(ngModel)]="policyApplication.coverageAmount" 
+                         name="coverageAmount" readonly>
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Premium Amount (Annual)</label>
+                <div class="input-group">
+                  <span class="input-group-text">₹</span>
+                  <input type="number" class="form-control" 
+                         [(ngModel)]="policyApplication.premiumAmount" 
+                         name="premiumAmount" readonly>
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Deductible</label>
+                <div class="input-group">
+                  <span class="input-group-text">₹</span>
+                  <input type="number" class="form-control" 
+                         [(ngModel)]="policyApplication.deductible" 
+                         name="deductible" readonly>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Additional Notes</label>
+              <textarea class="form-control" rows="3" 
+                        [(ngModel)]="policyApplication.notes" 
+                        name="notes" 
+                        placeholder="Any additional information or special requirements..."></textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" 
+                      [disabled]="!policyForm.form.valid || isSubmitting">
+                <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+                <i class="bi bi-check-circle" *ngIf="!isSubmitting"></i>
+                {{isSubmitting ? 'Submitting...' : 'Submit Application'}}
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="cancel()">
+                <i class="bi bi-x-circle"></i> Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

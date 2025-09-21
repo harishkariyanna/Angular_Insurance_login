@@ -16,13 +16,12 @@ namespace InsuranceManagement.Models
         public int CustomerId { get; set; }
 
         [ForeignKey("CustomerId")]
-        public virtual Customer Customer { get; set; } = null!;
+        public virtual User Customer { get; set; } = null!;
 
-        [Required]
-        public int AgentId { get; set; }
+        public int? AgentId { get; set; }
 
         [ForeignKey("AgentId")]
-        public virtual User Agent { get; set; } = null!;
+        public virtual User? Agent { get; set; }
 
         [Required]
         [StringLength(50)]
@@ -36,7 +35,15 @@ namespace InsuranceManagement.Models
 
         [Required]
         [StringLength(50)]
-        public string Status { get; set; } = "Pending";
+        public string Status { get; set; } = "Active";
+
+        public bool IsExpired => DateTime.UtcNow > EndDate;
+        
+        public bool CanBeRenewed => IsExpired;
+        
+        public DateTime? RenewalDate { get; set; }
+        
+        public int? RenewedFromPolicyId { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]

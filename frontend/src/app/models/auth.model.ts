@@ -10,13 +10,14 @@ export interface RegisterRequest {
   phoneNumber?: string;
   password: string;
   confirmPassword: string;
+  roleId: number;
 }
 
 export interface AuthResponse {
   token: string;
-  refreshToken: string;
+  refreshToken?: string;
   user: User;
-  expiresAt: Date;
+  expiresAt?: Date;
 }
 
 export interface User {

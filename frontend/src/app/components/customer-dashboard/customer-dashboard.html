@@ -1,0 +1,96 @@
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2 text-primary"><i class="bi bi-shield-fill"></i> My Insurance Policies</h1>
+    <div class="d-flex align-items-center gap-3">
+      <span class="text-muted">Welcome, <strong>{{currentUser?.firstName}} {{currentUser?.lastName}}</strong> ({{currentUser?.role?.name}})</span>
+      <button class="btn btn-outline-danger btn-sm" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </button>
+    </div>
+  </div>
+  
+  <!-- Agent Information -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <button class="btn btn-success btn-lg" (click)="applyForPolicy()">
+        <i class="bi bi-plus-circle"></i> Apply for New Policy
+      </button>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0"><i class="bi bi-person-badge"></i> Your Agent</h6>
+        </div>
+        <div class="card-body">
+          <div *ngIf="assignedAgent; else noAgent">
+            <h6>{{assignedAgent.name}}</h6>
+            <p class="mb-1"><i class="bi bi-envelope"></i> {{assignedAgent.email}}</p>
+            <p class="mb-0" *ngIf="assignedAgent.phoneNumber"><i class="bi bi-telephone"></i> {{assignedAgent.phoneNumber}}</p>
+          </div>
+          <ng-template #noAgent>
+            <p class="text-muted mb-0">No agent assigned yet</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Policies Grid -->
+  <div class="row">
+    <div *ngFor="let policy of policies" class="col-lg-4 col-md-6 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0 text-primary">{{policy.policyType}} Insurance</h5>
+          <span class="badge" [class]="policy.status === 'Active' ? 'bg-success' : policy.status === 'Expired' ? 'bg-danger' : 'bg-warning'">
+            {{policy.status}}
+          </span>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <p class="mb-1"><strong>Policy Number:</strong></p>
+            <p class="text-muted">{{policy.policyNumber}}</p>
+          </div>
+          <div class="row mb-3">
+            <div class="col-6">
+              <p class="mb-1"><strong>Premium:</strong></p>
+              <p class="text-success h6">₹{{policy.premiumAmount | number}}</p>
+            </div>
+            <div class="col-6">
+              <p class="mb-1"><strong>Coverage:</strong></p>
+              <p class="text-primary h6">₹{{policy.coverageAmount | number}}</p>
+            </div>
+          </div>
+          <div class="mb-3">
+            <p class="mb-1"><strong>Agent:</strong></p>
+            <p class="text-muted">{{policy.agentName}}</p>
+          </div>
+          <div class="mb-3">
+            <p class="mb-1"><strong>Valid Until:</strong></p>
+            <p class="text-muted">{{policy.endDate | date}}</p>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent">
+          <div class="d-grid gap-2">
+            <button (click)="viewPolicy(policy)" class="btn btn-primary btn-sm">
+              <i class="bi bi-eye"></i> View Details
+            </button>
+            <button (click)="renewPolicy(policy)" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-arrow-clockwise"></i> Renew Policy
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Empty State -->
+  <div *ngIf="policies.length === 0" class="text-center py-5">
+    <i class="bi bi-shield-x display-1 text-muted"></i>
+    <h4 class="text-muted mt-3">No Policies Found</h4>
+    <p class="text-muted">You don't have any insurance policies yet. Apply for your first policy!</p>
+    <button class="btn btn-success" (click)="applyForPolicy()">
+      <i class="bi bi-plus-circle"></i> Apply for New Policy
+    </button>
+  </div>
+</div>

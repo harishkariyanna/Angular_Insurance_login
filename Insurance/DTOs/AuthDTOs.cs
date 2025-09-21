@@ -37,6 +37,48 @@ namespace InsuranceManagement.DTOs
         [Required]
         [Compare("Password")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        [Required]
+        public int RoleId { get; set; }
+    }
+
+    public class LoginRequest
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class RegisterRequest
+    {
+        [Required]
+        [StringLength(50)]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(50)]
+        public string LastName { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        public string? PhoneNumber { get; set; }
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        public int RoleId { get; set; }
+    }
+
+    public class AuthResponse
+    {
+        public string Token { get; set; } = string.Empty;
+        public UserDto User { get; set; } = null!;
     }
 
     public class ChangePasswordDto
@@ -72,6 +114,7 @@ namespace InsuranceManagement.DTOs
         public bool IsActive { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? LastLoginDate { get; set; }
+        public int? AgentId { get; set; }
     }
 
     public class RoleDto

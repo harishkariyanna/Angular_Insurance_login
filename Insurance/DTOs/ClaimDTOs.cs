@@ -7,7 +7,7 @@ namespace InsuranceManagement.DTOs
         public int Id { get; set; }
         public string ClaimNumber { get; set; } = string.Empty;
         public PolicyDto Policy { get; set; } = null!;
-        public CustomerDto Customer { get; set; } = null!;
+        public UserDto Customer { get; set; } = null!;
         public UserDto? AssignedAgent { get; set; }
         public string ClaimType { get; set; } = string.Empty;
         public DateTime IncidentDate { get; set; }

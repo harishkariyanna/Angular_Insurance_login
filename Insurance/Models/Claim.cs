@@ -22,7 +22,7 @@ namespace InsuranceManagement.Models
         public int CustomerId { get; set; }
 
         [ForeignKey("CustomerId")]
-        public virtual Customer Customer { get; set; } = null!;
+        public virtual User Customer { get; set; } = null!;
 
         public int? AssignedAgentId { get; set; }
 

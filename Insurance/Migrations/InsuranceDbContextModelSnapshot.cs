@@ -305,6 +305,9 @@ namespace InsuranceAPI.Migrations
                     b.Property<int>("AddressId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("AgentId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
@@ -344,6 +347,8 @@ namespace InsuranceAPI.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AddressId");
+
+                    b.HasIndex("AgentId");
 
                     b.ToTable("Customers");
 
@@ -581,7 +586,7 @@ namespace InsuranceAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AgentId")
+                    b.Property<int?>("AgentId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("CoverageAmount")
@@ -591,6 +596,9 @@ namespace InsuranceAPI.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CustomerId1")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Deductible")
@@ -631,62 +639,14 @@ namespace InsuranceAPI.Migrations
 
                     b.HasIndex("AgentId");
 
+                    b.HasIndex("CustomerId1");
+
                     b.HasIndex("PolicyNumber")
                         .IsUnique();
 
                     b.HasIndex("CustomerId", "Status");
 
                     b.ToTable("Policies");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            AgentId = 2,
-                            CoverageAmount = 500000m,
-                            CreatedDate = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CustomerId = 1,
-                            Deductible = 5000m,
-                            EndDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            LastModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            PolicyNumber = "POL-2024-000001",
-                            PolicyType = "Health",
-                            PremiumAmount = 25000m,
-                            StartDate = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Status = "Active"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            AgentId = 2,
-                            CoverageAmount = 2000000m,
-                            CreatedDate = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CustomerId = 2,
-                            Deductible = 0m,
-                            EndDate = new DateTime(2044, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            LastModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            PolicyNumber = "POL-2024-000002",
-                            PolicyType = "Life",
-                            PremiumAmount = 50000m,
-                            StartDate = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Status = "Active"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            AgentId = 2,
-                            CoverageAmount = 300000m,
-                            CreatedDate = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CustomerId = 3,
-                            Deductible = 2000m,
-                            EndDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            LastModifiedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            PolicyNumber = "POL-2024-000003",
-                            PolicyType = "Vehicle",
-                            PremiumAmount = 15000m,
-                            StartDate = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Status = "Active"
-                        });
                 });
 
             modelBuilder.Entity("InsuranceManagement.Models.Premium", b =>
@@ -814,6 +774,9 @@ namespace InsuranceAPI.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AgentId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
@@ -974,7 +937,13 @@ namespace InsuranceAPI.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("InsuranceManagement.Models.User", "Agent")
+                        .WithMany()
+                        .HasForeignKey("AgentId");
+
                     b.Navigation("Address");
+
+                    b.Navigation("Agent");
                 });
 
             modelBuilder.Entity("InsuranceManagement.Models.Document", b =>
@@ -995,15 +964,20 @@ namespace InsuranceAPI.Migrations
             modelBuilder.Entity("InsuranceManagement.Models.Policy", b =>
                 {
                     b.HasOne("InsuranceManagement.Models.User", "Agent")
-                        .WithMany("PoliciesAsAgent")
+                        .WithMany()
                         .HasForeignKey("AgentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("InsuranceManagement.Models.Customer", "Customer")
+                    b.HasOne("InsuranceManagement.Models.User", "Customer")
                         .WithMany("Policies")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("InsuranceManagement.Models.Customer", null)
+                        .WithMany("Policies")
+                        .HasForeignKey("CustomerId1")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Agent");
@@ -1102,7 +1076,7 @@ namespace InsuranceAPI.Migrations
 
                     b.Navigation("ClaimNotes");
 
-                    b.Navigation("PoliciesAsAgent");
+                    b.Navigation("Policies");
                 });
 #pragma warning restore 612, 618
         }

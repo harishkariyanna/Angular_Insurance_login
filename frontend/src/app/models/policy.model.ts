@@ -14,6 +14,10 @@ export interface Policy {
   deductible: number;
   notes?: string;
   createdDate: Date;
+  isExpired: boolean;
+  canBeRenewed: boolean;
+  renewalDate?: Date;
+  renewedFromPolicyId?: number;
 }
 
 export interface CreatePolicyRequest {

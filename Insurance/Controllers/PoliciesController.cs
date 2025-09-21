@@ -9,7 +9,6 @@ namespace InsuranceManagement.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class PoliciesController : ControllerBase
     {
         private readonly InsuranceDbContext _context;
@@ -32,8 +31,8 @@ namespace InsuranceManagement.Controllers
                     PolicyNumber = p.PolicyNumber,
                     CustomerId = p.CustomerId,
                     CustomerName = $"{p.Customer.FirstName} {p.Customer.LastName}",
-                    AgentId = p.AgentId,
-                    AgentName = $"{p.Agent.FirstName} {p.Agent.LastName}",
+                    AgentId = p.AgentId ?? 0,
+                    AgentName = p.Agent != null ? $"{p.Agent.FirstName} {p.Agent.LastName}" : "Unassigned",
                     PolicyType = p.PolicyType,
                     StartDate = p.StartDate,
                     EndDate = p.EndDate,
@@ -42,7 +41,11 @@ namespace InsuranceManagement.Controllers
                     CoverageAmount = p.CoverageAmount,
                     Deductible = p.Deductible,
                     Notes = p.Notes,
-                    CreatedDate = p.CreatedDate
+                    CreatedDate = p.CreatedDate,
+                    IsExpired = DateTime.UtcNow > p.EndDate,
+                    CanBeRenewed = DateTime.UtcNow > p.EndDate,
+                    RenewalDate = p.RenewalDate,
+                    RenewedFromPolicyId = p.RenewedFromPolicyId
                 })
                 .ToListAsync();
             
@@ -50,58 +53,45 @@ namespace InsuranceManagement.Controllers
         }
 
         [HttpPost]
-        [Authorize]
-        public async Task<ActionResult<PolicyDto>> CreatePolicy(CreatePolicyRequest request)
+        public async Task<ActionResult> CreatePolicy(CreatePolicyDto request)
         {
-            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-            if (userRole != "Admin" && userRole != "Agent")
-                return Forbid("Only Admin and Agent users can create policies");
-
-            var policy = new Policy
+            try
             {
-                PolicyNumber = request.PolicyNumber,
-                CustomerId = request.CustomerId,
-                AgentId = request.AgentId,
-                PolicyType = request.PolicyType,
-                StartDate = request.StartDate,
-                EndDate = request.EndDate,
-                PremiumAmount = request.PremiumAmount,
-                CoverageAmount = request.CoverageAmount,
-                Deductible = request.Deductible,
-                Notes = request.Notes,
-                Status = "Active",
-                CreatedDate = DateTime.UtcNow,
-                LastModifiedDate = DateTime.UtcNow
-            };
-
-            _context.Policies.Add(policy);
-            await _context.SaveChangesAsync();
-
-            var createdPolicy = await _context.Policies
-                .Include(p => p.Customer)
-                .Include(p => p.Agent)
-                .Where(p => p.Id == policy.Id)
-                .Select(p => new PolicyDto
+                // Verify customer exists
+                var customer = await _context.Users.FindAsync(request.CustomerId);
+                if (customer == null)
                 {
-                    Id = p.Id,
-                    PolicyNumber = p.PolicyNumber,
-                    CustomerId = p.CustomerId,
-                    CustomerName = $"{p.Customer.FirstName} {p.Customer.LastName}",
-                    AgentId = p.AgentId,
-                    AgentName = $"{p.Agent.FirstName} {p.Agent.LastName}",
-                    PolicyType = p.PolicyType,
-                    StartDate = p.StartDate,
-                    EndDate = p.EndDate,
-                    Status = p.Status,
-                    PremiumAmount = p.PremiumAmount,
-                    CoverageAmount = p.CoverageAmount,
-                    Deductible = p.Deductible,
-                    Notes = p.Notes,
-                    CreatedDate = p.CreatedDate
-                })
-                .FirstAsync();
+                    return BadRequest("Customer not found");
+                }
 
-            return CreatedAtAction(nameof(GetPolicies), new { id = policy.Id }, createdPolicy);
+                var policyNumber = $"POL-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
+                
+                var policy = new Policy
+                {
+                    PolicyNumber = policyNumber,
+                    CustomerId = request.CustomerId,
+                    AgentId = null,
+                    PolicyType = request.PolicyType,
+                    StartDate = request.StartDate,
+                    EndDate = request.EndDate,
+                    PremiumAmount = request.PremiumAmount,
+                    CoverageAmount = request.CoverageAmount,
+                    Deductible = request.Deductible,
+                    Notes = request.Notes,
+                    Status = "Active",
+                    CreatedDate = DateTime.UtcNow,
+                    LastModifiedDate = DateTime.UtcNow
+                };
+
+                _context.Policies.Add(policy);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Policy application submitted successfully", policyId = policy.Id });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to create policy", error = ex.Message, stackTrace = ex.StackTrace });
+            }
         }
 
         [HttpPut("{id}")]
@@ -161,8 +151,8 @@ namespace InsuranceManagement.Controllers
                     PolicyNumber = p.PolicyNumber,
                     CustomerId = p.CustomerId,
                     CustomerName = $"{p.Customer.FirstName} {p.Customer.LastName}",
-                    AgentId = p.AgentId,
-                    AgentName = $"{p.Agent.FirstName} {p.Agent.LastName}",
+                    AgentId = p.AgentId ?? 0,
+                    AgentName = p.Agent != null ? $"{p.Agent.FirstName} {p.Agent.LastName}" : "Unassigned",
                     PolicyType = p.PolicyType,
                     StartDate = p.StartDate,
                     EndDate = p.EndDate,
@@ -222,6 +212,55 @@ namespace InsuranceManagement.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error updating policy: {ex.Message}");
+            }
+        }
+
+        [HttpPost("{id}/renew")]
+        [Authorize]
+        public async Task<ActionResult> RenewPolicy(int id, RenewPolicyDto request)
+        {
+            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            if (userRole != "Agent" && userRole != "Admin")
+                return Forbid("Only Agent and Admin users can renew policies");
+
+            try
+            {
+                var originalPolicy = await _context.Policies.FindAsync(id);
+                if (originalPolicy == null)
+                    return NotFound($"Policy with ID {id} not found");
+
+                if (!originalPolicy.IsExpired)
+                    return BadRequest("Policy is not expired and cannot be renewed");
+
+                var policyNumber = $"POL-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
+                
+                var renewedPolicy = new Policy
+                {
+                    PolicyNumber = policyNumber,
+                    CustomerId = originalPolicy.CustomerId,
+                    AgentId = originalPolicy.AgentId,
+                    PolicyType = originalPolicy.PolicyType,
+                    StartDate = request.NewStartDate,
+                    EndDate = request.NewEndDate,
+                    PremiumAmount = request.NewPremiumAmount ?? originalPolicy.PremiumAmount,
+                    CoverageAmount = request.NewCoverageAmount ?? originalPolicy.CoverageAmount,
+                    Deductible = request.NewDeductible ?? originalPolicy.Deductible,
+                    Notes = request.Notes ?? "Renewed policy",
+                    Status = "Active",
+                    RenewalDate = DateTime.UtcNow,
+                    RenewedFromPolicyId = originalPolicy.Id,
+                    CreatedDate = DateTime.UtcNow,
+                    LastModifiedDate = DateTime.UtcNow
+                };
+
+                _context.Policies.Add(renewedPolicy);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Policy renewed successfully", policyId = renewedPolicy.Id, policyNumber = renewedPolicy.PolicyNumber });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to renew policy", error = ex.Message });
             }
         }
 

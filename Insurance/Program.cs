@@ -94,15 +94,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<InsuranceDbContext>();
-    if (app.Environment.IsDevelopment())
-    {
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
-    }
-    else
-    {
-        context.Database.Migrate();
-    }
+    context.Database.EnsureCreated();
 }
 
 // Configure the HTTP request pipeline.

@@ -100,6 +100,54 @@ namespace InsuranceManagement.Services
             };
         }
 
+        public async Task<AuthResponseDto> RegisterWithRoleAsync(RegisterDto registerDto)
+        {
+            if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
+            {
+                throw new InvalidOperationException("User with this email already exists");
+            }
+
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Id == registerDto.RoleId);
+            if (role == null)
+            {
+                throw new InvalidOperationException("Selected role not found");
+            }
+
+            var user = new User
+            {
+                FirstName = registerDto.FirstName,
+                LastName = registerDto.LastName,
+                Email = registerDto.Email,
+                PhoneNumber = registerDto.PhoneNumber,
+                PasswordHash = registerDto.Password,
+                RoleId = registerDto.RoleId,
+                IsActive = true,
+                CreatedDate = DateTime.UtcNow
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            user = await _context.Users
+                .Include(u => u.Role)
+                .ThenInclude(r => r.RolePermissions)
+                .ThenInclude(rp => rp.Permission)
+                .FirstAsync(u => u.Id == user.Id);
+
+            await _auditService.LogAsync(user.Id, "Create", "User", user.Id, null, null);
+
+            var token = GenerateJwtToken(user);
+            var refreshToken = GenerateRefreshToken();
+
+            return new AuthResponseDto
+            {
+                Token = token,
+                RefreshToken = refreshToken,
+                User = MapToUserDto(user),
+                ExpiresAt = DateTime.UtcNow.AddHours(24)
+            };
+        }
+
         public async Task<bool> LogoutAsync(int userId)
         {
             await _auditService.LogAsync(userId, "Logout", "User", userId, null, null);

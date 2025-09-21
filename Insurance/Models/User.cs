@@ -34,6 +34,8 @@ namespace InsuranceManagement.Models
         [ForeignKey("RoleId")]
         public virtual Role Role { get; set; } = null!;
 
+        public int? AgentId { get; set; }
+
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedDate { get; set; }
@@ -41,7 +43,8 @@ namespace InsuranceManagement.Models
         public DateTime? LastLoginDate { get; set; }
 
         // Navigation properties
-        public virtual ICollection<Policy> PoliciesAsAgent { get; set; } = new List<Policy>();
+        public virtual ICollection<Policy> Policies { get; set; } = new List<Policy>();
+        public virtual ICollection<Claim> Claims { get; set; } = new List<Claim>();
         public virtual ICollection<Claim> AssignedClaims { get; set; } = new List<Claim>();
         public virtual ICollection<ClaimNote> ClaimNotes { get; set; } = new List<ClaimNote>();
         public virtual ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();

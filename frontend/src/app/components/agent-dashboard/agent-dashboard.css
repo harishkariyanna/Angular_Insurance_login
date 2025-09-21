@@ -1,0 +1,68 @@
+.agent-dashboard {
+  padding: 20px;
+}
+
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+}
+
+.customers-list {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.customer-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.customer-card {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.3s;
+}
+
+.customer-card:hover {
+  border-color: #007bff;
+}
+
+.customer-card.selected {
+  border-color: #007bff;
+  background: #e3f2fd;
+}
+
+.customer-details {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.policies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.policy-item {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  border-left: 4px solid #007bff;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}

@@ -1,0 +1,109 @@
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h3>Apply for Insurance Policy</h3>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="onSubmit()" #applicationForm="ngForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="policyType" class="form-label">Policy Type</label>
+                <select 
+                  id="policyType" 
+                  name="policyType"
+                  class="form-select"
+                  [(ngModel)]="applicationData.policyType" 
+                  required>
+                  <option value="">Select Policy Type</option>
+                  <option *ngFor="let type of policyTypes" [value]="type">{{type}}</option>
+                </select>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="startDate" class="form-label">Start Date</label>
+                <input 
+                  type="date" 
+                  id="startDate" 
+                  name="startDate"
+                  class="form-control"
+                  [(ngModel)]="applicationData.startDate" 
+                  required>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="endDate" class="form-label">End Date</label>
+                <input 
+                  type="date" 
+                  id="endDate" 
+                  name="endDate"
+                  class="form-control"
+                  [(ngModel)]="applicationData.endDate" 
+                  required>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="premiumAmount" class="form-label">Premium Amount (₹)</label>
+                <input 
+                  type="number" 
+                  id="premiumAmount" 
+                  name="premiumAmount"
+                  class="form-control"
+                  [(ngModel)]="applicationData.premiumAmount" 
+                  required>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="coverageAmount" class="form-label">Coverage Amount (₹)</label>
+                <input 
+                  type="number" 
+                  id="coverageAmount" 
+                  name="coverageAmount"
+                  class="form-control"
+                  [(ngModel)]="applicationData.coverageAmount" 
+                  required>
+              </div>
+              
+              <div class="col-md-6 mb-3">
+                <label for="deductible" class="form-label">Deductible (₹)</label>
+                <input 
+                  type="number" 
+                  id="deductible" 
+                  name="deductible"
+                  class="form-control"
+                  [(ngModel)]="applicationData.deductible">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="notes" class="form-label">Additional Notes</label>
+              <textarea 
+                id="notes" 
+                name="notes"
+                class="form-control"
+                rows="3"
+                [(ngModel)]="applicationData.notes"></textarea>
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <button type="button" class="btn btn-secondary" (click)="goBack()">
+                Back to Dashboard
+              </button>
+              <button 
+                type="submit" 
+                [disabled]="applicationForm.invalid || loading"
+                class="btn btn-primary">
+                {{loading ? 'Submitting...' : 'Submit Application'}}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

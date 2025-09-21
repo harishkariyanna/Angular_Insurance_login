@@ -7,6 +7,7 @@ namespace InsuranceManagement.Services
     {
         Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
         Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
+        Task<AuthResponseDto> RegisterWithRoleAsync(RegisterDto registerDto);
         Task<bool> LogoutAsync(int userId);
         Task<AuthResponseDto> RefreshTokenAsync(string refreshToken);
         Task<bool> ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto);
